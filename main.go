@@ -12,6 +12,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/yanorei32/lrchelper/def"
+	"github.com/yanorei32/lrchelper/edtbeat"
 	"github.com/yanorei32/lrchelper/edtlegacy"
 	"github.com/yanorei32/lrchelper/lyric"
 )
@@ -36,18 +37,13 @@ func init_(wd string, def def.Def) {
 		log.Fatal("Parse length: " + err.Error())
 	}
 
-	offset, err := time.ParseDuration(fmt.Sprintf("%vs", def.Timing.GlobalOffset))
-	if err != nil {
-		log.Fatal("Parse offset: " + err.Error())
-	}
-
 	lrcF, err := os.Create(edtlrcPath)
 	if err != nil {
 		log.Fatal("Create file: " + err.Error())
 	}
 
 	lrcF.WriteString(
-		edtlegacy.GenerateBase(len, def.Timing.Bpm, def.Timing.Bpb, offset),
+		edtlegacy.GenerateBase(len, def.Timing),
 	)
 }
 
@@ -72,7 +68,16 @@ func build(wd string, def def.Def) {
 			log.Fatal("Parse _EDIT.lrc: " + err.Error())
 		}
 
-	case "edtfmt":
+	case "beat":
+		edtBeatF, err := os.Open(filepath.Join(wd, "_EDIT.txt"))
+		if err != nil {
+			log.Fatal("Open _EDIT.txt: " + err.Error())
+		}
+
+		lyric.Lines, err = edtbeat.Parse(bufio.NewReader(edtBeatF), def.Timing)
+		if err != nil {
+			log.Fatal("Parse _EDIT.txt: " + err.Error())
+		}
 
 	default:
 		log.Fatal("Unknown mode: " + def.Mode)
@@ -81,17 +86,12 @@ func build(wd string, def def.Def) {
 	for _, export := range def.Exports {
 		lyric.Length = export.Length
 
-		offset, err := time.ParseDuration(fmt.Sprintf("%vs", export.Offset))
-		if err != nil {
-			log.Fatal("Parse offset: " + err.Error())
-		}
-
 		lrcF, err := os.Create(filepath.Join(wd, export.Filename))
 		if err != nil {
 			log.Fatal("Create file: " + err.Error())
 		}
 
-		lrcF.WriteString(lyric.Format(offset))
+		lrcF.WriteString(lyric.Format(export.Offset))
 	}
 }
 

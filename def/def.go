@@ -1,5 +1,7 @@
 package def
 
+import "time"
+
 type Def struct {
 	Mode       string   `yaml:"mode"`
 	YoutubeUrl string   `yaml:"youtube_url"`
@@ -19,13 +21,13 @@ type Head struct {
 }
 
 type Timing struct {
-	Bpm          int     `yaml:"bpm"`
-	Bpb          int     `yaml:"bpb"`
-	GlobalOffset float32 `yaml:"global_offset"`
+	Bpm          int           `yaml:"bpm"`
+	Bpb          int           `yaml:"bpb"`
+	GlobalOffset time.Duration `yaml:"global_offset"`
 }
 
 type Export struct {
-	Filename string  `yaml:"filename"`
-	Length   string  `yaml:"length"`
-	Offset   float32 `yaml:"offset"`
+	Filename string        `yaml:"filename"`
+	Length   string        `yaml:"length"`
+	Offset   time.Duration `yaml:"offset"`
 }
